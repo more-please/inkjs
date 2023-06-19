@@ -1,54 +1,76 @@
-import { throwNullException } from "./NullException";
-import { StringBuilder } from "./StringBuilder";
 import { ListDefinition } from "./ListDefinition";
 import { Story } from "./Story";
+import { StringBuilder } from "./StringBuilder";
+import { throwNullException } from "./NullException";
 
 export class InkListItem implements IInkListItem {
   // InkListItem is a struct
 
-  public readonly originName: string | null = null;
-  public readonly itemName: string | null = null;
+  public readonly originName: string | null;
+  public readonly itemName: string | null;
+  public readonly fullName: string;
+  private readonly _serialized: SerializedInkListItem;
 
-  constructor(originName: string | null, itemName: string | null);
-  constructor(fullName: string | null);
-  constructor() {
+  private static _NULL = new InkListItem(null);
+
+  private static _FULL_NAME_CACHE = new Map<string, InkListItem>();
+
+  public static create(
+    originName: string | null,
+    itemName: string | null
+  ): InkListItem;
+  public static create(fullName: string | null): InkListItem;
+  public static create(): InkListItem {
+    let fullName: string;
     if (typeof arguments[1] !== "undefined") {
       let originName = arguments[0] as string | null;
       let itemName = arguments[1] as string | null;
-
-      this.originName = originName;
-      this.itemName = itemName;
+      fullName = originName + "." + itemName;
     } else if (arguments[0]) {
-      let fullName = arguments[0] as string;
+      fullName = arguments[0] as string;
+    } else {
+      return InkListItem._NULL;
+    }
+    const cached = InkListItem._FULL_NAME_CACHE.get(fullName);
+    if (cached) {
+      return cached;
+    }
+    const result = new InkListItem(fullName);
+    InkListItem._FULL_NAME_CACHE.set(fullName, result);
+    return result;
+  }
 
+  private constructor(fullName: string | null) {
+    if (fullName !== null) {
       let nameParts = fullName.toString().split(".");
       this.originName = nameParts[0];
       this.itemName = nameParts[1];
+      this.fullName = fullName;
+    } else {
+      this.originName = null;
+      this.itemName = null;
+      this.fullName = "?.null";
     }
+    // We are simply using a JSON representation as a value-typed key.
+    this._serialized = JSON.stringify({
+      originName: this.originName,
+      itemName: this.itemName,
+    });
   }
+
   public static get Null() {
-    return new InkListItem(null, null);
+    return InkListItem._NULL;
   }
   public get isNull() {
-    return this.originName == null && this.itemName == null;
-  }
-  get fullName() {
-    return (
-      (this.originName !== null ? this.originName : "?") + "." + this.itemName
-    );
+    return this === InkListItem._NULL;
   }
   public toString(): string {
-    return this.fullName;
+    return this.fullName ?? "?";
   }
   public Equals(obj: InkListItem) {
     if (obj instanceof InkListItem) {
-      let otherItem = obj;
-      return (
-        otherItem.itemName == this.itemName &&
-        otherItem.originName == this.originName
-      );
+      return this.fullName === obj.fullName;
     }
-
     return false;
   }
 
@@ -61,30 +83,40 @@ export class InkListItem implements IInkListItem {
    * Returns a shallow clone of the current instance.
    */
   public copy() {
-    return new InkListItem(this.originName, this.itemName);
+    return this; // We're immutable, so no need to copy
   }
   /**
    * Returns a `SerializedInkListItem` representing the current
    * instance. The result is intended to be used as a key inside a Map.
    */
   public serialized(): SerializedInkListItem {
-    // We are simply using a JSON representation as a value-typed key.
-    return JSON.stringify({
-      originName: this.originName,
-      itemName: this.itemName,
-    });
+    return this._serialized;
   }
+
+  private static _JSON_CACHE = new Map<SerializedInkListItem, InkListItem>();
 
   /**
    * Reconstructs a `InkListItem` from the given SerializedInkListItem.
    */
   public static fromSerializedKey(key: SerializedInkListItem): InkListItem {
+    const cached = InkListItem._JSON_CACHE.get(key);
+    if (cached) {
+      return cached;
+    }
+
     let obj = JSON.parse(key);
-    if (!InkListItem.isLikeInkListItem(obj)) return InkListItem.Null;
+    if (!InkListItem.isLikeInkListItem(obj)) {
+      return InkListItem.Null;
+    }
 
     let inkListItem = obj as IInkListItem;
 
-    return new InkListItem(inkListItem.originName, inkListItem.itemName);
+    const result = InkListItem.create(
+      inkListItem.originName,
+      inkListItem.itemName
+    );
+    InkListItem._JSON_CACHE.set(key, result);
+    return result;
   }
 
   /**
@@ -249,7 +281,7 @@ export class InkList extends Map<SerializedInkListItem, number> {
             " to this list because it isn't known to any list definitions previously associated with this list."
         );
 
-      let item = new InkListItem(foundListDef.name, itemName);
+      let item = InkListItem.create(foundListDef.name, itemName);
       let itemVal = foundListDef.ValueForItem(item);
       this.Add(item, itemVal);
     }
@@ -459,8 +491,9 @@ export class InkList extends Map<SerializedInkListItem, number> {
     if (Number.isInteger(minBound)) {
       minValue = minBound;
     } else {
-      if (minBound instanceof InkList && minBound.Count > 0)
+      if (minBound instanceof InkList && minBound.Count > 0) {
         minValue = minBound.minItem.Value;
+      }
     }
 
     if (Number.isInteger(maxBound)) {
@@ -477,7 +510,6 @@ export class InkList extends Map<SerializedInkListItem, number> {
         subList.Add(item.Key, item.Value);
       }
     }
-
     return subList;
   }
   public Equals(otherInkList: InkList) {

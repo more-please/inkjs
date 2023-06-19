@@ -1,10 +1,10 @@
-import { Container as RuntimeContainer } from "../../../../engine/Container";
 import { Expression } from "../Expression/Expression";
-import { InkList as RuntimeInkList } from "../../../../engine/InkList";
-import { InkListItem as RuntimeInkListItem } from "../../../../engine/InkList";
+import { Identifier } from "../Identifier";
 import { ListElementDefinition } from "./ListElementDefinition";
 import { ListValue } from "../../../../engine/Value";
-import { Identifier } from "../Identifier";
+import { Container as RuntimeContainer } from "../../../../engine/Container";
+import { InkList as RuntimeInkList } from "../../../../engine/InkList";
+import { InkListItem as RuntimeInkListItem } from "../../../../engine/InkList";
 
 export class List extends Expression {
   constructor(public readonly itemIdentifierList: Identifier[]) {
@@ -58,7 +58,10 @@ export class List extends Expression {
             listName = listItem.parent.identifier?.name || null;
           }
 
-          const item = new RuntimeInkListItem(listName, listItem.name || null);
+          const item = RuntimeInkListItem.create(
+            listName,
+            listItem.name || null
+          );
 
           if (runtimeRawList.has(item.serialized())) {
             this.Warning(`Duplicate of item '${itemIdentifier}' in list.`);

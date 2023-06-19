@@ -1,33 +1,34 @@
-import { Container } from "./Container";
 import {
-  Value,
-  IntValue,
-  FloatValue,
-  StringValue,
-  DivertTargetValue,
-  VariablePointerValue,
-  ListValue,
   BoolValue,
+  DivertTargetValue,
+  FloatValue,
+  IntValue,
+  ListValue,
+  StringValue,
+  Value,
+  VariablePointerValue,
 } from "./Value";
-import { Glue } from "./Glue";
-import { ControlCommand } from "./ControlCommand";
-import { PushPopType } from "./PushPop";
-import { Divert } from "./Divert";
-import { ChoicePoint } from "./ChoicePoint";
-import { VariableReference } from "./VariableReference";
-import { VariableAssignment } from "./VariableAssignment";
-import { NativeFunctionCall } from "./NativeFunctionCall";
-import { Void } from "./Void";
-import { Tag } from "./Tag";
-import { Path } from "./Path";
+import { InkList, InkListItem } from "./InkList";
+
 import { Choice } from "./Choice";
+import { ChoicePoint } from "./ChoicePoint";
+import { Container } from "./Container";
+import { ControlCommand } from "./ControlCommand";
+import { Divert } from "./Divert";
+import { Glue } from "./Glue";
+import { InkObject } from "./Object";
 import { ListDefinition } from "./ListDefinition";
 import { ListDefinitionsOrigin } from "./ListDefinitionsOrigin";
-import { InkListItem, InkList } from "./InkList";
-import { InkObject } from "./Object";
+import { NativeFunctionCall } from "./NativeFunctionCall";
+import { Path } from "./Path";
+import { PushPopType } from "./PushPop";
+import { SimpleJson } from "./SimpleJson";
+import { Tag } from "./Tag";
+import { VariableAssignment } from "./VariableAssignment";
+import { VariableReference } from "./VariableReference";
+import { Void } from "./Void";
 import { asOrNull } from "./TypeAssertion";
 import { throwNullException } from "./NullException";
-import { SimpleJson } from "./SimpleJson";
 
 export class JsonSerialisation {
   public static JArrayToRuntimeObjList(
@@ -465,7 +466,7 @@ export class JsonSerialisation {
         for (let key in listContent) {
           if (listContent.hasOwnProperty(key)) {
             let nameToVal = listContent[key];
-            let item = new InkListItem(key);
+            let item = InkListItem.create(key);
             let val = parseInt(nameToVal);
             rawList.Add(item, val);
           }

@@ -1,4 +1,5 @@
 import { InkListItem, SerializedInkListItem } from "./InkList";
+
 import { TryGetResult } from "./TryGetResult";
 
 export class ListDefinition {
@@ -18,7 +19,7 @@ export class ListDefinition {
     if (this._items == null) {
       this._items = new Map();
       for (let [key, value] of this._itemNameToValues) {
-        let item = new InkListItem(this.name, key);
+        let item = InkListItem.create(this.name, key);
         this._items.set(item.serialized(), value);
       }
     }
@@ -48,7 +49,7 @@ export class ListDefinition {
   ): TryGetResult<InkListItem> {
     for (let [key, value] of this._itemNameToValues) {
       if (value == val) {
-        item = new InkListItem(this.name, key);
+        item = InkListItem.create(this.name, key);
         return { result: item, exists: true };
       }
     }

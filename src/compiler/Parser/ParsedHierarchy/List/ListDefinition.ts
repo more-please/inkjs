@@ -1,13 +1,13 @@
-import { InkList as RuntimeInkList } from "../../../../engine/InkList";
-import { InkListItem as RuntimeInkListItem } from "../../../../engine/InkList";
-import { ListDefinition as RuntimeListDefinition } from "../../../../engine/ListDefinition";
+import { Identifier } from "../Identifier";
 import { ListElementDefinition } from "./ListElementDefinition";
 import { ListValue } from "../../../../engine/Value";
 import { ParsedObject } from "../Object";
+import { InkList as RuntimeInkList } from "../../../../engine/InkList";
+import { InkListItem as RuntimeInkListItem } from "../../../../engine/InkList";
+import { ListDefinition as RuntimeListDefinition } from "../../../../engine/ListDefinition";
 import { Story } from "../Story";
 import { SymbolType } from "../SymbolType";
 import { VariableAssignment } from "../Variable/VariableAssignment";
-import { Identifier } from "../Identifier";
 
 export class ListDefinition extends ParsedObject {
   public identifier: Identifier | null = null;
@@ -71,7 +71,7 @@ export class ListDefinition extends ParsedObject {
     const initialValues = new RuntimeInkList();
     for (const itemDef of this.itemDefinitions) {
       if (itemDef.inInitialList) {
-        const item = new RuntimeInkListItem(
+        const item = RuntimeInkListItem.create(
           this.identifier?.name || null,
           itemDef.name || null
         );
