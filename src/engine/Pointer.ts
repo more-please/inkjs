@@ -33,7 +33,7 @@ export class Pointer {
 
     if (this.index >= 0)
       return this.container!.path.PathByAppendingComponent(
-        new Path.Component(this.index)
+        Path.Component.create(this.index)
       );
     else return this.container!.path;
   }

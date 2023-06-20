@@ -98,7 +98,7 @@ export class Container extends InkObject implements INamedContent {
     let container: Container = this;
     while (container instanceof Container) {
       if (container.content.length > 0) {
-        components.push(new Path.Component(0));
+        components.push(Path.Component.create(0));
         container = container.content[0] as Container;
       }
     }

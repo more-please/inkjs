@@ -132,9 +132,9 @@ export class Path {
       // the normal parseInt won't do for the detection because it's too relaxed.
       // see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt
       if (/^(\-|\+)?([0-9]+|Infinity)$/.test(str)) {
-        this._components.push(new Path.Component(parseInt(str)));
+        this._components.push(Path.Component.create(parseInt(str)));
       } else {
-        this._components.push(new Path.Component(str));
+        this._components.push(Path.Component.create(str));
       }
     }
   }
@@ -170,7 +170,9 @@ export namespace Path {
     public readonly index: number;
     public readonly name: string | null;
 
-    constructor(indexOrName: string | number) {
+    private static _cache = new Map<string | number, Component>();
+
+    private constructor(indexOrName: string | number) {
       this.index = -1;
       this.name = null;
       if (typeof indexOrName == "string") {
@@ -179,6 +181,17 @@ export namespace Path {
         this.index = indexOrName;
       }
     }
+
+    public static create(indexOrName: string | number): Component {
+      const cached = this._cache.get(indexOrName);
+      if (cached) {
+        return cached;
+      }
+      const result = new Component(indexOrName);
+      this._cache.set(indexOrName, result);
+      return result;
+    }
+
     get isIndex(): boolean {
       return this.index >= 0;
     }

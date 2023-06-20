@@ -62,9 +62,11 @@ export class InkObject {
           if (namedChild != null && namedChild.hasValidName) {
             if (namedChild.name === null)
               return throwNullException("namedChild.name");
-            comps.unshift(new Path.Component(namedChild.name!));
+            comps.unshift(Path.Component.create(namedChild.name!));
           } else {
-            comps.unshift(new Path.Component(container.content.indexOf(child)));
+            comps.unshift(
+              Path.Component.create(container.content.indexOf(child))
+            );
           }
 
           child = container;
